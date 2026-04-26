@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cacao Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ca:#3B2314;--cm:#6B3A22;--cl:#A0522D;
+  --cr:#FAF6F0;--g:#2D5016;--gm:#4A7C2F;
+  --tx:#1C1009;--tm:#5C3D2E;--tl:#8B6555;
+  --bd:rgba(107,58,34,0.15);--bf:#A0522D;
+  --cd:#FFFCF8;--sb:#F5EDE3;--tg:#EAD8C8;--tt:#4A2010;
+  --warn:#854F0B;--warnbg:#FAEEDA;
+  --ok:#2D5016;--okbg:#EAF3DE;--okbdr:#639922;
+  --bad:#A32D2D;--badbg:#FCEBEB;
+  --buyer:#185FA5;--buyerbg:#E6F1FB;--buyerdk:#042C53;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cr);color:var(--tx);min-height:100vh;}
+
+/* Auth screen */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;background:var(--ca);}
+.auth-card{background:var(--cd);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:420px;}
+.auth-logo{font-family:'Fraunces',serif;font-size:28px;color:var(--ca);letter-spacing:-0.02em;margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--tl);margin-bottom:2rem;}
+.auth-tabs{display:flex;border-bottom:0.5px solid var(--bd);margin-bottom:1.5rem;}
+.auth-tab{padding:8px 16px;font-size:13px;cursor:pointer;color:var(--tl);border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif;}
+.auth-tab.active{color:var(--cm);border-bottom-color:var(--cl);font-weight:500;}
+.ff{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.ff label{font-size:11.5px;font-weight:500;color:var(--tm);}
+input,select{font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 12px;border:0.5px solid var(--bd);border-radius:8px;background:var(--cr);color:var(--tx);outline:none;width:100%;transition:border-color .15s;}
+input:focus,select:focus{border-color:var(--bf);background:#fff;}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%238B6555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+
+/* App shell */
+.shell{display:flex;flex-direction:column;min-height:100vh;}
+.hdr{height:54px;padding:0 1.5rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100;}
+.hdr.admin-hdr{background:var(--ca);}
+.hdr.buyer-hdr{background:var(--buyerdk);}
+.logo{font-family:'Fraunces',serif;font-size:19px;color:#FAF6F0;letter-spacing:-0.02em;}
+.np{font-size:12.5px;padding:5px 11px;border-radius:20px;color:rgba(250,246,240,0.65);cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;}
+.np.active,.np:hover{background:rgba(250,246,240,0.18);color:#FAF6F0;}
+.main{display:flex;flex:1;}
+.sb{width:220px;min-width:220px;background:var(--cd);border-right:0.5px solid var(--bd);padding:1.25rem 0;}
+.sbsc{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--tl);padding:8px 18px 4px;margin-top:8px;}
+.sbi{display:flex;align-items:center;gap:9px;padding:8px 18px;font-size:13px;color:var(--tm);cursor:pointer;border-left:2.5px solid transparent;transition:all .12s;}
+.sbi:hover{background:var(--sb);}
+.sbi.active{background:var(--sb);color:var(--cm);border-left-color:var(--cl);font-weight:500;}
+.sbi.buyer-active{background:var(--buyerbg);color:var(--buyer);border-left-color:var(--buyer);font-weight:500;}
+.bdg{margin-left:auto;font-size:10px;padding:2px 6px;border-radius:9px;background:var(--tg);color:var(--tt);font-weight:500;}
+.con{flex:1;padding:1.75rem 2rem;overflow-y:auto;max-width:900px;}
+.pt{font-family:'Fraunces',serif;font-size:24px;color:var(--ca);font-weight:400;letter-spacing:-0.02em;margin-bottom:3px;}
+.ps{font-size:13px;color:var(--tl);margin-bottom:1.5rem;}
+.card{background:var(--cd);border:0.5px solid var(--bd);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem;}
+.ct{font-family:'Fraunces',serif;font-size:14px;color:var(--ca);font-weight:500;padding-bottom:9px;border-bottom:0.5px solid var(--bd);margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;}
+.srow{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:1.25rem;}
+.sc{background:var(--cd);border:0.5px solid var(--bd);border-radius:10px;padding:12px 14px;}
+.sl{font-size:10px;color:var(--tl);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;font-weight:500;}
+.sv{font-family:'Fraunces',serif;font-size:22px;color:var(--ca);line-height:1;}
+.su{font-size:11px;color:var(--tl);margin-top:2px;}
+.btn-p{padding:8px 18px;background:var(--cm);color:#FAF6F0;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.btn-p:hover{background:var(--ca);}
+.btn-p:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-s{padding:7px 14px;background:none;color:var(--tm);border:0.5px solid var(--bd);border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-s:hover{background:var(--sb);}
+.btn-buyer{padding:8px 16px;background:var(--buyer);color:#FAF6F0;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-ok{padding:8px 16px;background:#2D5016;color:#FAF6F0;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.btn-danger{padding:7px 14px;background:none;color:var(--bad);border:0.5px solid var(--badbg);border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.abar{display:flex;align-items:center;gap:9px;padding:1rem 2rem;border-top:0.5px solid var(--bd);background:var(--cd);position:sticky;bottom:0;margin:0 -2rem;}
+.alert{border-radius:8px;padding:9px 14px;font-size:12.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.alert.ok{background:var(--okbg);color:var(--ok);border:0.5px solid var(--okbdr);}
+.alert.warn{background:var(--warnbg);color:var(--warn);border:0.5px solid #EF9F27;}
+.alert.bad{background:var(--badbg);color:var(--bad);border:0.5px solid #E24B4A;}
+.alert.info{background:var(--buyerbg);color:var(--buyer);border:0.5px solid #378ADD;}
+.toast{position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:500;color:#fff;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:9999;}
+.toast.show{opacity:1;transform:translateY(0);}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fg.full{grid-template-columns:1fr;}
+.fg.three{grid-template-columns:1fr 1fr 1fr;}
+.s2{grid-column:span 2;}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;}
+.tbl th{text-align:left;font-size:10px;font-weight:500;color:var(--tl);letter-spacing:.07em;text-transform:uppercase;padding:7px 11px;border-bottom:0.5px solid var(--bd);background:var(--sb);}
+.tbl td{padding:9px 11px;border-bottom:0.5px solid var(--bd);color:var(--tx);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--sb);cursor:pointer;}
+.pill{font-size:10.5px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.pill.active{background:var(--okbg);color:var(--ok);}
+.pill.pending{background:var(--warnbg);color:var(--warn);}
+.pill.draft{background:var(--sb);color:var(--tl);}
+.pill.ferm{background:var(--warnbg);color:var(--warn);}
+.pill.dry{background:#E0F4FF;color:#0D4A7A;}
+.pill.complete{background:var(--okbg);color:var(--ok);}
+.pill.excellent{background:var(--okbg);color:#2D5016;}
+.pill.good{background:#EAF3DE;color:#3B6D11;}
+.pill.fair{background:var(--warnbg);color:var(--warn);}
+.pill.poor{background:var(--badbg);color:var(--bad);}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading{display:flex;align-items:center;justify-content:center;padding:3rem;color:var(--tl);font-size:13px;gap:10px;}
+.range-row{display:flex;align-items:center;gap:10px;}
+.range-row input[type=range]{flex:1;}
+.range-val{font-family:'Fraunces',serif;font-size:18px;min-width:48px;text-align:right;}
+textarea{font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;border:0.5px solid var(--bd);border-radius:7px;background:var(--cr);color:var(--tx);outline:none;width:100%;resize:vertical;min-height:68px;}
+textarea:focus{border-color:var(--bf);background:#fff;}
+.step-dots{display:flex;gap:6px;margin-bottom:1.5rem;}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--bd);}
+.step-dot.active{background:var(--cm);width:24px;border-radius:4px;}
+.step-dot.done{background:var(--gm);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── Supabase client ─────────────────────────────────────────── */
+const { createClient } = supabase;
+const sb = createClient(
+  'https://qujbpnnegsafududjgur.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1amJwbm5lZ3NhZnVkdWpkZ3VyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyMzQ0MDAsImV4cCI6MjA5MjgxMDQwMH0.tS5Gj4JrCJO2xxy8gEVzoKZ2ejtNtzG6GiVC43E5Kj0'
+);
+
+/* ── State ───────────────────────────────────────────────────── */
+let user = null;
+let profile = null;
+let view = 'dashboard';
+let data = { coops:[], batches:[], farmers:[], offers:[] };
+let selectedId = null;
+let formStep = 1;
+
+/* ── Boot ────────────────────────────────────────────────────── */
+async function boot() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    user = session.user;
+    await loadProfile();
+    await loadData();
+    render();
+  } else {
+    renderAuth();
+  }
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN') {
+      user = session.user;
+      await loadProfile();
+      await loadData();
+      render();
+    } else if (event === 'SIGNED_OUT') {
+      user = null; profile = null;
+      renderAuth();
+    }
+  });
+}
+
+async function loadProfile() {
+  const { data: p } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  profile = p;
+}
+
+async function loadData() {
+  if (!profile) return;
+  if (profile.role === 'buyer') {
+    const { data: b } = await sb.from('batch_summary').select('*').order('cut_score', { ascending: false });
+    data.batches = b || [];
+    const { data: o } = await sb.from('offers').select('*').eq('buyer_id', user.id).order('created_at', { ascending: false });
+    data.offers = o || [];
+  } else {
+    const { data: c } = await sb.from('cooperatives').select('*').order('created_at', { ascending: false });
+    data.coops = c || [];
+    const { data: b } = await sb.from('batches').select('*, farmers(full_name, village), cooperatives(name, province)').order('created_at', { ascending: false });
+    data.batches = b || [];
+    const { data: f } = await sb.from('farmers').select('*, cooperatives(name)').order('created_at', { ascending: false });
+    data.farmers = f || [];
+  }
+}
+
+/* ── Toast ───────────────────────────────────────────────────── */
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = type==='ok' ? '#2D5016' : type==='bad' ? '#A32D2D' : '#185FA5';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+/* ── DRC flag ────────────────────────────────────────────────── */
+function drcFlag() {
+  return `<svg width="20" height="14" viewBox="0 0 28 19" xmlns="http://www.w3.org/2000/svg" style="border-radius:2px;border:0.5px solid rgba(0,0,0,0.12);flex-shrink:0;vertical-align:middle;"><rect width="28" height="19" fill="#007FFF"/><polygon points="0,19 28,0 28,4 0,19" fill="#F7D618"/><polygon points="0,15 28,0 28,2.5 0,17.5" fill="#CE1021"/><polygon points="0,17.5 28,2.5 28,4 0,19" fill="#CE1021"/><polygon points="0,15 28,0 0,17.5" fill="#F7D618"/><circle cx="3.5" cy="3.5" r="2.8" fill="#F7D618"/><polygon points="3.5,1.5 3.93,2.82 5.3,2.82 4.19,3.63 4.62,4.95 3.5,4.14 2.38,4.95 2.81,3.63 1.7,2.82 3.07,2.82" fill="#007FFF"/></svg>`;
+}
+
+/* ── Auth ────────────────────────────────────────────────────── */
+let authMode = 'login';
+function renderAuth() {
+  document.getElementById('root').innerHTML = `
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <div class="auth-logo">&#9670; Cacao</div>
+        <div class="auth-sub">DRC cacao traceability platform</div>
+        <div class="auth-tabs">
+          <button class="auth-tab ${authMode==='login'?'active':''}" onclick="authMode='login';renderAuth()">Sign in</button>
+          <button class="auth-tab ${authMode==='signup'?'active':''}" onclick="authMode='signup';renderAuth()">Create account</button>
+        </div>
+        <div id="auth-err" style="display:none;" class="alert bad" style="margin-bottom:12px;"></div>
+        ${authMode==='signup'?`
+        <div class="ff"><label>Full name</label><input id="name-in" type="text" placeholder="Your full name"/></div>
+        <div class="ff"><label>Role</label>
+          <select id="role-in">
+            <option value="field_worker">Field worker</option>
+            <option value="buyer">Buyer</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>`:''}
+        <div class="ff"><label>Email</label><input id="email-in" type="email" placeholder="you@organisation.com"/></div>
+        <div class="ff" style="margin-bottom:1.25rem;"><label>Password</label><input id="pw-in" type="password" placeholder="••••••••"/></div>
+        <button class="btn-p" style="width:100%;padding:10px;" id="auth-btn" onclick="doAuth()">
+          ${authMode==='login'?'Sign in':'Create account'}
+        </button>
+        <div style="font-size:11.5px;color:var(--tl);text-align:center;margin-top:14px;">
+          ${drcFlag()} Democratic Republic of Congo &nbsp;·&nbsp; 5 languages supported
+        </div>
+      </div>
+    </div>`;
+}
+
+async function doAuth() {
+  const btn = document.getElementById('auth-btn');
+  const errEl = document.getElementById('auth-err');
+  const email = document.getElementById('email-in')?.value;
+  const pw = document.getElementById('pw-in')?.value;
+  btn.innerHTML = '<span class="spin"></span>';
+  btn.disabled = true;
+  errEl.style.display = 'none';
+
+  let error;
+  if (authMode === 'login') {
+    ({ error } = await sb.auth.signInWithPassword({ email, password: pw }));
+  } else {
+    const name = document.getElementById('name-in')?.value;
+    const role = document.getElementById('role-in')?.value;
+    ({ error } = await sb.auth.signUp({
+      email, password: pw,
+      options: { data: { full_name: name, role } }
+    }));
+    if (!error) {
+      errEl.style.display = 'flex';
+      errEl.className = 'alert ok';
+      errEl.textContent = 'Account created! Check your email to confirm, then sign in.';
+      btn.innerHTML = 'Create account';
+      btn.disabled = false;
+      return;
+    }
+  }
+  if (error) {
+    errEl.style.display = 'flex';
+    errEl.textContent = error.message;
+    btn.innerHTML = authMode==='login'?'Sign in':'Create account';
+    btn.disabled = false;
+  }
+}
+
+/* ── Main render router ──────────────────────────────────────── */
+function render() {
+  if (!profile) { renderAuth(); return; }
+  if (profile.role === 'buyer') renderBuyerApp();
+  else renderAdminApp();
+}
+
+function setView(v) { view = v; render(); }
+
+/* ══════════════════════════════════════════════════════════════
+   ADMIN / FIELD WORKER APP
+══════════════════════════════════════════════════════════════ */
+function renderAdminApp() {
+  const views = ['dashboard','cooperatives','batches','fermentation','cuttest','reports'];
+  document.getElementById('root').innerHTML = `
+    <div class="shell">
+      <header class="hdr admin-hdr">
+        <div class="logo">&#9670; Cacao</div>
+        <nav style="display:flex;gap:3px;margin-left:auto;">
+          <button class="np ${view==='dashboard'?'active':''}" onclick="setView('dashboard')">Dashboard</button>
+          <button class="np ${view==='cooperatives'||view==='newcoop'?'active':''}" onclick="setView('cooperatives')">Cooperatives</button>
+          <button class="np ${view==='batches'||view==='newbatch'?'active':''}" onclick="setView('batches')">Batches</button>
+          <button class="np ${view==='fermentation'?'active':''}" onclick="setView('fermentation')">Fermentation</button>
+        </nav>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:12px;">
+          <div style="font-size:11px;padding:3px 9px;border-radius:10px;background:rgba(250,246,240,0.15);color:#FAF6F0;">${profile.role}</div>
+          <button class="np" onclick="sb.auth.signOut()">Sign out</button>
+        </div>
+      </header>
+      <div class="main">
+        <aside class="sb">
+          <div class="sbsc">Overview</div>
+          <div class="sbi ${view==='dashboard'?'active':''}" onclick="setView('dashboard')"><span style="width:17px;text-align:center;">&#9632;</span> Dashboard</div>
+          <div class="sbsc">Registry</div>
+          <div class="sbi ${view==='cooperatives'?'active':''}" onclick="setView('cooperatives')"><span style="width:17px;text-align:center;">&#9776;</span> Cooperatives <span class="bdg">${data.coops.length}</span></div>
+          <div class="sbi ${view==='newcoop'?'active':''}" onclick="setView('newcoop');formStep=1;"><span style="width:17px;text-align:center;">&#43;</span> Register coop</div>
+          <div class="sbsc">Production</div>
+          <div class="sbi ${view==='batches'?'active':''}" onclick="setView('batches')"><span style="width:17px;text-align:center;">&#9776;</span> Batches <span class="bdg">${data.batches.length}</span></div>
+          <div class="sbi ${view==='newbatch'?'active':''}" onclick="setView('newbatch')"><span style="width:17px;text-align:center;">&#43;</span> New batch</div>
+          <div class="sbi ${view==='fermentation'?'active':''}" onclick="setView('fermentation')"><span style="width:17px;text-align:center;">&#9675;</span> Ferm & drying</div>
+          <div class="sbi ${view==='cuttest'?'active':''}" onclick="setView('cuttest')"><span style="width:17px;text-align:center;">&#9670;</span> Cut test</div>
+          ${profile.role==='admin'?`
+          <div class="sbsc">Admin</div>
+          <div class="sbi ${view==='offers'?'active':''}" onclick="setView('offers')"><span style="width:17px;text-align:center;">&#9671;</span> Buyer offers</div>
+          <div class="sbi" onclick="setView('reports')"><span style="width:17px;text-align:center;">&#8595;</span> Export data</div>`:''}
+        </aside>
+        <main class="con" id="mc"></main>
+      </div>
+      <div class="abar" id="ab"></div>
+    </div>`;
+  renderAdminView();
+}
+
+function renderAdminView() {
+  const mc = document.getElementById('mc');
+  const ab = document.getElementById('ab');
+  if (!mc) return;
+  if (view==='dashboard') renderDashboard(mc,ab);
+  else if (view==='cooperatives') renderCooperatives(mc,ab);
+  else if (view==='newcoop') renderNewCoop(mc,ab);
+  else if (view==='batches') renderBatches(mc,ab);
+  else if (view==='newbatch') renderNewBatch(mc,ab);
+  else if (view==='fermentation') renderFermentation(mc,ab);
+  else if (view==='cuttest') renderCutTest(mc,ab);
+  else if (view==='offers') renderOffers(mc,ab);
+  else renderDashboard(mc,ab);
+}
+
+function renderDashboard(mc,ab) {
+  const activeBatches = data.batches.filter(b=>b.phase==='ferm'||b.phase==='dry').length;
+  const complete = data.batches.filter(b=>b.phase==='complete').length;
+  const totalFarmers = data.farmers.length;
+  mc.innerHTML = `
+    <div style="margin-bottom:1.25rem;">
+      <div class="pt">Dashboard</div>
+      <div class="ps" style="display:flex;align-items:center;gap:6px;">${drcFlag()} DRC — Équateur / Tshuapa & Kongo Central</div>
+    </div>
+    <div class="srow">
+      <div class="sc"><div class="sl">Cooperatives</div><div class="sv">${data.coops.length}</div><div class="su">registered</div></div>
+      <div class="sc"><div class="sl">Farmers</div><div class="sv">${totalFarmers}</div><div class="su">on platform</div></div>
+      <div class="sc"><div class="sl">Active batches</div><div class="sv" style="color:#854F0B;">${activeBatches}</div><div class="su">fermenting / drying</div></div>
+      <div class="sc"><div class="sl">Complete</div><div class="sv" style="color:#2D5016;">${complete}</div><div class="su">this season</div></div>
+    </div>
+    ${data.batches.length===0?`
+    <div class="card" style="text-align:center;padding:3rem;">
+      <div style="font-family:'Fraunces',serif;font-size:20px;color:var(--cm);margin-bottom:8px;">Welcome to Cacao</div>
+      <div style="font-size:13px;color:var(--tl);margin-bottom:1.5rem;">Start by registering your first cooperative, then add farmers and create batches.</div>
+      <button class="btn-p" onclick="setView('newcoop');formStep=1;">Register first cooperative &#8594;</button>
+    </div>`:`
+    <div class="card">
+      <div class="ct">Recent batches <button class="btn-s" style="font-size:11.5px;padding:4px 11px;" onclick="setView('batches')">All &#8594;</button></div>
+      <table class="tbl">
+        <thead><tr><th>Batch</th><th>Farmer</th><th>Village</th><th>Phase</th><th>Day</th></tr></thead>
+        <tbody>
+          ${data.batches.slice(0,5).map(b=>`<tr onclick="selectedId='${b.id}';setView('fermentation')">
+            <td style="font-weight:500;color:var(--cm);">${b.batch_code||'—'}</td>
+            <td>${b.farmers?.full_name||'—'}</td>
+            <td style="color:var(--tl);">${b.farmers?.village||'—'}</td>
+            <td><span class="pill ${b.phase}">${b.phase}</span></td>
+            <td>${b.current_day}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`}`;
+  ab.innerHTML = `<button class="btn-p" onclick="setView('newcoop');formStep=1;">+ Register cooperative</button><button class="btn-s" onclick="setView('newbatch')">+ New batch</button>`;
+}
+
+function renderCooperatives(mc,ab) {
+  mc.innerHTML = `
+    <div style="margin-bottom:1.25rem;"><div class="pt">Cooperatives</div><div class="ps">Registered cooperatives in DRC</div></div>
+    ${data.coops.length===0?`
+    <div class="card" style="text-align:center;padding:2.5rem;">
+      <div style="font-size:13.5px;color:var(--tl);margin-bottom:1rem;">No cooperatives registered yet.</div>
+      <button class="btn-p" onclick="setView('newcoop');formStep=1;">Register first cooperative</button>
+    </div>`:`
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="tbl">
+        <thead><tr><th>Name</th><th>Code</th><th>Province</th><th>Territory</th><th>Certifs</th><th>Status</th></tr></thead>
+        <tbody>
+          ${data.coops.map(c=>`<tr>
+            <td style="font-weight:500;">${c.name}</td>
+            <td style="color:var(--tl);font-size:11.5px;">${c.code||'—'}</td>
+            <td>${c.province||'—'}</td>
+            <td style="color:var(--tl);">${c.territory||'—'}</td>
+            <td>${(c.certifications||[]).map(x=>`<span style="font-size:10px;padding:1px 6px;background:var(--tg);color:var(--tt);border-radius:8px;margin-right:2px;">${x}</span>`).join('')||'—'}</td>
+            <td><span class="pill ${c.status||'draft'}">${c.status||'draft'}</span></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`}`;
+  ab.innerHTML = `<button class="btn-p" onclick="setView('newcoop');formStep=1;">+ Register cooperative</button>`;
+}
+
+const DRC_PROVINCES = ['Équateur','Tshuapa','Kongo Central','Mai-Ndombe','Kinshasa'];
+const DRC_TERRITORIES = {
+  'Équateur':['Basankusu','Bikoro','Bolomba','Bomongo','Ingende','Lukolela','Makanza','Mbandaka'],
+  'Tshuapa':['Befale','Boende','Bokungu','Djolu','Ikela','Monkoto'],
+  'Kongo Central':['Boma','Kasangulu','Kimvula','Luozi','Madimba','Matadi','Mbanza-Ngungu','Muanda','Tshela'],
+  'Mai-Ndombe':['Bolobo','Inongo','Kiri','Kutu','Mushie','Oshwe','Yumbi'],
+  'Kinshasa':['Kinshasa']
+};
+
+let coopForm = {};
+function renderNewCoop(mc,ab) {
+  const steps = ['Basic info','Location','Certifications','Review'];
+  const dots = steps.map((_,i)=>`<div class="step-dot ${i+1===formStep?'active':i+1<formStep?'done':''}"></div>`).join('');
+  const terrs = (DRC_TERRITORIES[coopForm.province]||[]).map(t=>`<option ${coopForm.territory===t?'selected':''}>${t}</option>`).join('');
+  const certs = ['Fairtrade','Rainforest Alliance','UTZ','Organic','4C','Ecert','GlobalGAP','Bio Équitable'];
+  const crops = ['Cacao','Café','Caoutchouc','Huile de palme','Manioc','Plantain','Arachide'];
+
+  let body = '';
+  if (formStep===1) body=`
+    <div class="fg">
+      <div class="ff"><label>Cooperative name *</label><input id="cf-name" type="text" value="${coopForm.name||''}" placeholder="e.g. Coopérative Agricole de Bikoro"/></div>
+      <div class="ff"><label>Code / ID</label><input id="cf-code" type="text" value="${coopForm.code||''}" placeholder="e.g. CAB-001"/></div>
+      <div class="ff"><label>Chairperson *</label><input id="cf-chair" type="text" value="${coopForm.chairperson||''}" placeholder="Full name"/></div>
+      <div class="ff"><label>Phone</label><input id="cf-phone" type="tel" value="${coopForm.phone||''}" placeholder="+243 XX XXX XXXX"/></div>
+      <div class="ff"><label>Email</label><input id="cf-email" type="email" value="${coopForm.email||''}" placeholder="coop@email.cd"/></div>
+      <div class="ff"><label>Legal status</label>
+        <select id="cf-legal"><option>COOPEC</option><option>Coopérative OHADA</option><option>ASBL</option><option>Groupement informel</option><option>ONG</option></select>
+      </div>
+    </div>`;
+  else if (formStep===2) body=`
+    <div class="fg">
+      <div class="ff"><label>Province *</label>
+        <select id="cf-prov" onchange="coopForm.province=this.value;coopForm.territory='';renderAdminView()">
+          <option value="">Select…</option>${DRC_PROVINCES.map(p=>`<option ${coopForm.province===p?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </div>
+      <div class="ff"><label>Territory</label>
+        <select id="cf-terr"><option value="">Select…</option>${terrs}</select>
+      </div>
+      <div class="ff"><label>Village</label><input id="cf-village" type="text" value="${coopForm.village||''}" placeholder="e.g. Bikoro"/></div>
+      <div class="ff"><label>Total farmers</label><input id="cf-farmers" type="number" value="${coopForm.total_farmers||''}" placeholder="e.g. 120"/></div>
+      <div class="ff"><label>Latitude (GPS)</label><input id="cf-lat" type="text" value="${coopForm.lat||''}" placeholder="e.g. 0.0614"/></div>
+      <div class="ff"><label>Longitude (GPS)</label><input id="cf-lng" type="text" value="${coopForm.lng||''}" placeholder="e.g. 18.3736"/></div>
+    </div>
+    <button class="btn-s" style="margin-top:4px;" onclick="captureGPS()">&#8982; Use device GPS</button>`;
+  else if (formStep===3) body=`
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11.5px;font-weight:500;color:var(--tm);margin-bottom:8px;">Certifications</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;" id="cert-group">
+        ${certs.map(c=>`<label style="display:flex;align-items:center;gap:5px;padding:4px 10px;border:0.5px solid ${(coopForm.certifications||[]).includes(c)?'var(--cl)':'var(--bd)'};border-radius:18px;font-size:12px;cursor:pointer;background:${(coopForm.certifications||[]).includes(c)?'var(--tg)':'var(--cr)'};color:${(coopForm.certifications||[]).includes(c)?'var(--tt)':'var(--tm)'};user-select:none;" onclick="toggleCert('${c}')"><input type="checkbox" style="display:none;" ${(coopForm.certifications||[]).includes(c)?'checked':''}/> ${c}</label>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11.5px;font-weight:500;color:var(--tm);margin-bottom:8px;">Primary crops</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;" id="crop-group">
+        ${crops.map(c=>`<label style="display:flex;align-items:center;gap:5px;padding:4px 10px;border:0.5px solid ${(coopForm.crops||[]).includes(c)?'var(--cl)':'var(--bd)'};border-radius:18px;font-size:12px;cursor:pointer;background:${(coopForm.crops||[]).includes(c)?'var(--tg)':'var(--cr)'};color:${(coopForm.crops||[]).includes(c)?'var(--tt)':'var(--tm)'};user-select:none;" onclick="toggleCrop('${c}')"><input type="checkbox" style="display:none;" ${(coopForm.crops||[]).includes(c)?'checked':''}/> ${c}</label>`).join('')}
+      </div>
+    </div>`;
+  else body=`
+    <div style="display:flex;flex-direction:column;gap:0;">
+      ${[['Name',coopForm.name||'—'],['Code',coopForm.code||'—'],['Province',coopForm.province||'—'],['Territory',coopForm.territory||'—'],['Village',coopForm.village||'—'],['Certifications',(coopForm.certifications||[]).join(', ')||'—'],['Crops',(coopForm.crops||[]).join(', ')||'—']].map(([k,v])=>`
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--bd);font-size:13px;">
+          <span style="color:var(--tl);">${k}</span><span style="font-weight:500;">${v}</span>
+        </div>`).join('')}
+    </div>`;
+
+  mc.innerHTML = `
+    <div style="margin-bottom:1.25rem;"><div class="pt">Register cooperative</div><div class="ps">${steps[formStep-1]}</div></div>
+    <div class="step-dots">${dots}</div>
+    <div class="card">${body}</div>`;
+
+  ab.innerHTML = `
+    ${formStep>1?`<button class="btn-s" onclick="saveCoopStep();formStep--;renderAdminView()">&#8592; Back</button>`:''}
+    <button class="btn-s" onclick="setView('cooperatives')">Cancel</button>
+    ${formStep<4?`<button class="btn-p" onclick="saveCoopStep();formStep++;renderAdminView()">Next &#8594;</button>`:`<button class="btn-p" onclick="submitCoop()">&#10003; Save cooperative</button>`}`;
+}
+
+function saveCoopStep() {
+  if (formStep===1) {
+    coopForm.name = document.getElementById('cf-name')?.value;
+    coopForm.code = document.getElementById('cf-code')?.value;
+    coopForm.chairperson = document.getElementById('cf-chair')?.value;
+    coopForm.phone = document.getElementById('cf-phone')?.value;
+    coopForm.email = document.getElementById('cf-email')?.value;
+    coopForm.legal_status = document.getElementById('cf-legal')?.value;
+  } else if (formStep===2) {
+    coopForm.province = document.getElementById('cf-prov')?.value;
+    coopForm.territory = document.getElementById('cf-terr')?.value;
+    coopForm.village = document.getElementById('cf-village')?.value;
+    coopForm.lat = parseFloat(document.getElementById('cf-lat')?.value)||null;
+    coopForm.lng = parseFloat(document.getElementById('cf-lng')?.value)||null;
+  }
+}
+
+function toggleCert(c) {
+  coopForm.certifications = coopForm.certifications||[];
+  const i = coopForm.certifications.indexOf(c);
+  if (i>-1) coopForm.certifications.splice(i,1); else coopForm.certifications.push(c);
+  renderAdminView();
+}
+function toggleCrop(c) {
+  coopForm.crops = coopForm.crops||[];
+  const i = coopForm.crops.indexOf(c);
+  if (i>-1) coopForm.crops.splice(i,1); else coopForm.crops.push(c);
+  renderAdminView();
+}
+
+function captureGPS() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(p=>{
+    coopForm.lat = parseFloat(p.coords.latitude.toFixed(6));
+    coopForm.lng = parseFloat(p.coords.longitude.toFixed(6));
+    renderAdminView();
+    toast('GPS captured');
+  }, ()=>toast('GPS unavailable','bad'));
+}
+
+async function submitCoop() {
+  saveCoopStep();
+  const { error } = await sb.from('cooperatives').insert({
+    name: coopForm.name,
+    code: coopForm.code,
+    province: coopForm.province,
+    territory: coopForm.territory,
+    village: coopForm.village,
+    lat: coopForm.lat,
+    lng: coopForm.lng,
+    chairperson: coopForm.chairperson,
+    phone: coopForm.phone,
+    email: coopForm.email,
+    legal_status: coopForm.legal_status,
+    certifications: coopForm.certifications||[],
+    crops: coopForm.crops||[],
+    created_by: user.id,
+    status: 'active'
+  });
+  if (error) { toast(error.message,'bad'); return; }
+  toast('Cooperative saved!');
+  coopForm = {};
+  await loadData();
+  setView('cooperatives');
+}
+
+function renderBatches(mc,ab) {
+  mc.innerHTML = `
+    <div style="margin-bottom:1.25rem;"><div class="pt">Batches</div><div class="ps">All fermentation & drying batches</div></div>
+    ${data.batches.length===0?`
+    <div class="card" style="text-align:center;padding:2.5rem;">
+      <div style="font-size:13.5px;color:var(--tl);margin-bottom:1rem;">No batches yet.</div>
+      <button class="btn-p" onclick="setView('newbatch')">Start first batch</button>
+    </div>`:`
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="tbl">
+        <thead><tr><th>Batch code</th><th>Farmer</th><th>Village</th><th>Wet kg</th><th>Phase</th><th>Day</th><th>Started</th></tr></thead>
+        <tbody>
+          ${data.batches.map(b=>`<tr onclick="selectedId='${b.id}';setView('fermentation')">
+            <td style="font-weight:500;color:var(--cm);">${b.batch_code||'—'}</td>
+            <td>${b.farmers?.full_name||'—'}</td>
+            <td style="color:var(--tl);">${b.farmers?.village||'—'}</td>
+            <td>${b.wet_kg||'—'}</td>
+            <td><span class="pill ${b.phase}">${b.phase}</span></td>
+            <td>${b.current_day}</td>
+            <td style="color:var(--tl);font-size:11.5px;">${b.start_date||'—'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`}`;
+  ab.innerHTML = `<button class="btn-p" onclick="setView('newbatch')">+ New batch</button>`;
+}
+
+let batchForm = {};
+function renderNewBatch(mc,ab) {
+  mc.innerHTML = `
+    <div style="margin-bottom:1.25rem;"><div class="pt">New batch</div><div class="ps">Box / basket fermentation — 7 days ferm + 7–10 days drying</div></div>
+    <div class="card">
+      <div class="ct">Batch details</div>
+      <div class="fg">
+        <div class="ff"><label>Farmer *</label>
+          <select id="bf-farmer">
+            <option value="">Select farmer…</option>
+            ${data.farmers.map(f=>`<option value="${f.id}">${f.full_name} — ${f.cooperatives?.name||''}</option>`).join('')}
+          </select>
+        </div>
+        <div class="ff"><label>Start date *</label><input id="bf-date" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+        <div class="ff"><label>Wet weight (kg)</label><input id="bf-kg" type="number" placeholder="e.g. 480" min="10"/></div>
+        <div class="ff"><label>Number of boxes</label>
+          <select id="bf-boxes"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+        </div>
+        <div class="ff"><label>Box material</label>
+          <select id="bf-mat"><option>Wooden box</option><option>Woven basket</option><option>Mixed</option></select>
+        </div>
+        <div class="ff s2"><label>Initial notes</label><input id="bf-notes" type="text" placeholder="e.g. Good pulp coverage, fresh harvest…"/></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:11.5px;font-weight:500;color:var(--tm);margin-bottom:8px;">Fermentation targets</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px;">
+        ${[['Temperature','44–50°C target','Alert if &lt;38° or &gt;50°'],['pH','4.2–4.8 target','Alert if &gt;5.5 after day 3'],['Moisture','≤7.5% export / ≤5% target','Method: meter preferred']].map(([t,v,d])=>`
+          <div style="padding:9px 12px;background:var(--sb);border-radius:8px;">
+            <div style="font-weight:500;color:var(--ca);margin-bottom:2px;">${t}</div>
+            <div style="color:var(--tl);">${v}</div>
+            <div style="color:var(--tl);font-size:11px;">${d}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  ab.innerHTML = `<button class="btn-s" onclick="setView('batches')">Cancel</button><button class="btn-p" onclick="submitBatch()">&#10003; Start batch</button>`;
+}
+
+async function submitBatch() {
+  const farmerId = document.getElementById('bf-farmer')?.value;
+  const startDate = document.getElementById('bf-date')?.value;
+  if (!farmerId || !startDate) { toast('Select a farmer and start date','bad'); return; }
+  const farmer = data.farmers.find(f=>f.id===farmerId);
+  const { data: b, error } = await sb.from('batches').insert({
+    farmer_id: farmerId,
+    cooperative_id: farmer?.cooperative_id,
+    start_date: startDate,
+    wet_kg: parseInt(document.getElementById('bf-kg')?.value)||null,
+    boxes: parseInt(document.getElementById('bf-boxes')?.value)||2,
+    box_material: document.getElementById('bf-mat')?.value,
+    notes: document.getElementById('bf-notes')?.value,
+    phase: 'ferm',
+    current_day: 1,
+    created_by: user.id
+  }).select().single();
+  if (error) { toast(error.message,'bad'); return; }
+  toast('Batch started!');
+  await loadData();
+  selectedId = b.id;
+  setView('fermentation');
+}
+
+let fermDay = 1;
+let fermLogs = {};
+let dryLogs = {};
+
+async function loadBatchLogs(batchId) {
+  const { data: fl } = await sb.from('fermentation_logs').select('*').eq('batch_id', batchId);
+  const { data: dl } = await sb.from('drying_logs').select('*').eq('batch_id', batchId);
+  fermLogs = {};
+  dryLogs = {};
+  (fl||[]).forEach(l => fermLogs[l.day] = l);
+  (dl||[]).forEach(l => dryLogs[l.day] = l);
+}
+
+async function renderFermentation(mc,ab) {
+  const batch = selectedId ? data.batches.find(b=>b.id===selectedId) : data.batches[0];
+  if (!batch) {
+    mc.innerHTML = `<div class="loading">No batches yet. <button class="btn-p" onclick="setView('newbatch')">Start one</button></div>`;
+    ab.innerHTML = '';
+    return;
+  }
+  if (selectedId && Object.keys(fermLogs).length===0) await loadBatchLogs(batch.id);
+
+  const isFerm = fermDay <= 7;
+  const log = isFerm ? fermLogs[fermDay] : dryLogs[fermDay];
+  const sliderTemp = log?.temperature_c || 42;
+  const sliderPH = log?.ph || 5.0;
+  const sliderMoist = log?.moisture_pct || 35;
+  const sliderMethod = log?.method || 'meter';
+
+  mc.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;">
+      <button class="btn-s" style="font-size:12px;padding:4px 11px;" onclick="setView('batches')">&#8592; Batches</button>
+      <div>
+        <div class="pt" style="font-size:20px;">${batch.batch_code||'Batch'}</div>
+        <div class="ps" style="margin-bottom:0;">${batch.farmers?.full_name||'—'} · ${batch.farmers?.village||'—'} · ${batch.wet_kg||'?'}kg</div>
+      </div>
+      <span class="pill ${batch.phase}" style="margin-left:auto;">${batch.phase}</span>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:500;color:var(--tl);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Fermentation days 1–7</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px;">
+        ${Array.from({length:7},(_,i)=>{const d=i+1,l=fermLogs[d],sel=fermDay===d;return`<div style="border:0.5px solid ${sel?'var(--cl)':l?'var(--okbdr)':'var(--bd)'};border-radius:8px;padding:7px 4px;text-align:center;cursor:pointer;background:${sel?'var(--tg)':l?'var(--okbg)':'var(--cr)'};" onclick="fermDay=${d};renderFermentation(document.getElementById('mc'),document.getElementById('ab'))"><div style="font-size:10px;color:var(--tl);">Day</div><div style="font-family:'Fraunces',serif;font-size:16px;color:var(--ca);">${d}</div>${l?`<div style="font-size:10px;color:#2D5016;">${l.temperature_c?.toFixed(1)}°</div>`:`<div style="font-size:10px;color:var(--tl);">—</div>`}</div>`;}).join('')}
+      </div>
+      <div style="font-size:11px;font-weight:500;color:var(--tl);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Drying days 8–17</div>
+      <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:5px;">
+        ${Array.from({length:10},(_,i)=>{const d=i+8,l=dryLogs[d],sel=fermDay===d;return`<div style="border:0.5px solid ${sel?'var(--cl)':l?'var(--okbdr)':'var(--bd)'};border-radius:8px;padding:6px 3px;text-align:center;cursor:pointer;background:${sel?'var(--tg)':l?'var(--okbg)':'var(--cr)'};" onclick="fermDay=${d};renderFermentation(document.getElementById('mc'),document.getElementById('ab'))"><div style="font-size:9px;color:var(--tl);">D${d}</div>${l?`<div style="font-size:10px;color:${l.moisture_pct<=5?'#085041':l.moisture_pct<=7.5?'#2D5016':'#854F0B'};font-weight:500;">${l.moisture_pct}%</div>`:`<div style="font-size:10px;color:var(--tl);">—</div>`}</div>`;}).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">
+        Day ${fermDay} log
+        <span style="font-size:11.5px;padding:3px 10px;border-radius:10px;background:${isFerm?'var(--warnbg)':'#E0F4FF'};color:${isFerm?'var(--warn)':'#0D4A7A'};">${isFerm?'Fermentation':'Drying'}</span>
+      </div>
+      ${isFerm?`
+      <div class="fg three">
+        <div class="ff">
+          <label>Temperature (°C) *</label>
+          <div class="range-row"><input type="range" min="28" max="55" step="0.5" value="${sliderTemp}" id="temp-sl" oninput="document.getElementById('temp-out').textContent=parseFloat(this.value).toFixed(1)+'°C';document.getElementById('temp-out').style.color=parseFloat(this.value)>50?'#A32D2D':parseFloat(this.value)>=44?'#2D5016':'#854F0B'"/>
+          <span class="range-val" id="temp-out" style="color:${sliderTemp>50?'#A32D2D':sliderTemp>=44?'#2D5016':'#854F0B'}">${parseFloat(sliderTemp).toFixed(1)}°C</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tl);margin-top:2px;"><span>28°</span><span style="color:#2D5016;">44–50° ideal</span><span>55°</span></div>
+        </div>
+        <div class="ff">
+          <label>pH *</label>
+          <div class="range-row"><input type="range" min="3.5" max="7.0" step="0.1" value="${sliderPH}" id="ph-sl" oninput="document.getElementById('ph-out').textContent=parseFloat(this.value).toFixed(1)"/>
+          <span class="range-val" id="ph-out">${parseFloat(sliderPH).toFixed(1)}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tl);margin-top:2px;"><span>3.5</span><span style="color:#2D5016;">4.2–4.8 ideal</span><span>7.0</span></div>
+        </div>
+        <div class="ff">
+          <label>Turns today</label>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            ${[0,1,2,3].map(n=>`<button id="turn-${n}" style="padding:5px 12px;border:0.5px solid var(--bd);border-radius:16px;font-size:12px;cursor:pointer;background:${(log?.turns||1)===n?'var(--tg)':'var(--cr)'};color:${(log?.turns||1)===n?'var(--tt)':'var(--tm)'};font-family:'DM Sans',sans-serif;" onclick="setTurns(${n})">${n}x</button>`).join('')}
+          </div>
+        </div>
+        <div class="ff">
+          <label>Weather</label>
+          <select id="weather-sl">
+            <option ${!log?.rain?'selected':''}>No rain</option>
+            <option ${log?.rain?'selected':''}>Light rain</option>
+            <option>Heavy rain</option>
+            <option>Cloudy</option>
+          </select>
+        </div>
+        <div class="ff s2"><label>Notes</label><input type="text" id="notes-sl" value="${log?.notes||''}" placeholder="e.g. Good colour, beans well covered…"/></div>
+      </div>`:`
+      <div class="fg three">
+        <div class="ff">
+          <label>Moisture % *</label>
+          <div class="range-row"><input type="range" min="3" max="50" step="0.5" value="${sliderMoist}" id="moist-sl" oninput="document.getElementById('moist-out').textContent=parseFloat(this.value).toFixed(1)+'%';document.getElementById('moist-out').style.color=parseFloat(this.value)<=5?'#085041':parseFloat(this.value)<=7.5?'#2D5016':'#854F0B'"/>
+          <span class="range-val" id="moist-out" style="color:${sliderMoist<=5?'#085041':sliderMoist<=7.5?'#2D5016':'#854F0B'}">${parseFloat(sliderMoist).toFixed(1)}%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tl);margin-top:2px;"><span>3%</span><span style="color:#085041;">≤5% target</span><span style="color:#2D5016;">≤7.5% export</span><span>50%</span></div>
+        </div>
+        <div class="ff">
+          <label>Measurement method *</label>
+          <div style="display:flex;gap:0;border:0.5px solid var(--bd);border-radius:8px;overflow:hidden;margin-top:4px;">
+            <button id="method-meter" style="flex:1;padding:8px;font-size:12.5px;cursor:pointer;background:${sliderMethod==='meter'?'#E6F1FB':'var(--cr)'};color:${sliderMethod==='meter'?'#0C447C':'var(--tm)'};font-weight:${sliderMethod==='meter'?'500':'400'};border:none;font-family:'DM Sans',sans-serif;border-right:0.5px solid var(--bd);" onclick="setMethod('meter')">&#9675; Meter</button>
+            <button id="method-visual" style="flex:1;padding:8px;font-size:12.5px;cursor:pointer;background:${sliderMethod==='visual'?'var(--warnbg)':'var(--cr)'};color:${sliderMethod==='visual'?'var(--warn)':'var(--tm)'};font-weight:${sliderMethod==='visual'?'500':'400'};border:none;font-family:'DM Sans',sans-serif;" onclick="setMethod('visual')">&#9651; Visual</button>
+          </div>
+        </div>
+        <div class="ff">
+          <label>Visual check</label>
+          <select id="visual-sl">
+            <option>Drying well</option><option>Uneven — turned</option><option>Moved inside</option><option>Mould spotted</option><option>Ready for bagging</option>
+          </select>
+        </div>
+        <div class="ff s2"><label>Notes</label><input type="text" id="notes-sl" value="${log?.notes||''}" placeholder="e.g. Good airflow, turned twice…"/></div>
+      </div>`}
+      <button class="btn-p" style="margin-top:8px;" onclick="saveLog('${batch.id}')">&#10003; Save day ${fermDay}</button>
+    </div>`;
+
+  ab.innerHTML = `
+    <button class="btn-s" onclick="fermDay=Math.max(1,fermDay-1);renderFermentation(document.getElementById('mc'),document.getElementById('ab'))">&#8592; Day ${Math.max(1,fermDay-1)}</button>
+    <button class="btn-p" onclick="fermDay=Math.min(17,fermDay+1);renderFermentation(document.getElementById('mc'),document.getElementById('ab'))">Day ${Math.min(17,fermDay+1)} &#8594;</button>
+    <button class="btn-s" style="margin-left:auto;" onclick="setView('cuttest')">Cut test &#8594;</button>`;
+}
+
+let currentTurns = 1;
+let currentMethod = 'meter';
+function setTurns(n) {
+  currentTurns = n;
+  document.querySelectorAll('[id^="turn-"]').forEach((b,i) => {
+    b.style.background = i===n ? 'var(--tg)' : 'var(--cr)';
+    b.style.color = i===n ? 'var(--tt)' : 'var(--tm)';
+  });
+}
+function setMethod(m) {
+  currentMethod = m;
+  const meter = document.getElementById('method-meter');
+  const visual = document.getElementById('method-visual');
+  if (meter) { meter.style.background = m==='meter'?'#E6F1FB':'var(--cr)'; meter.style.color = m==='meter'?'#0C447C':'var(--tm)'; meter.style.fontWeight = m==='meter'?'500':'400'; }
+  if (visual) { visual.style.background = m==='visual'?'var(--warnbg)':'var(--cr)'; visual.style.color = m==='visual'?'var(--warn)':'var(--tm)'; visual.style.fontWeight = m==='visual'?'500':'400'; }
+}
+
+async function saveLog(batchId) {
+  const isFerm = fermDay <= 7;
+  let error;
+  if (isFerm) {
+    const temp = parseFloat(document.getElementById('temp-sl')?.value||42);
+    const ph = parseFloat(document.getElementById('ph-sl')?.value||5.0);
+    const notes = document.getElementById('notes-sl')?.value||'';
+    const rain = document.getElementById('weather-sl')?.value !== 'No rain';
+    const { error: e } = await sb.from('fermentation_logs').upsert({
+      batch_id: batchId, day: fermDay,
+      temperature_c: temp, ph, turns: currentTurns,
+      rain, weather: document.getElementById('weather-sl')?.value,
+      notes, logged_by: user.id
+    }, { onConflict: 'batch_id,day' });
+    error = e;
+    if (!e) fermLogs[fermDay] = { day: fermDay, temperature_c: temp, ph, turns: currentTurns, notes };
+  } else {
+    const moist = parseFloat(document.getElementById('moist-sl')?.value||35);
+    const notes = document.getElementById('notes-sl')?.value||'';
+    const { error: e } = await sb.from('drying_logs').upsert({
+      batch_id: batchId, day: fermDay,
+      moisture_pct: moist, method: currentMethod,
+      weather: document.getElementById('visual-sl')?.value,
+      visual_check: document.getElementById('visual-sl')?.value,
+      notes, logged_by: user.id
+    }, { onConflict: 'batch_id,day' });
+    error = e;
+    if (!e) {
+      dryLogs[fermDay] = { day: fermDay, moisture_pct: moist, method: currentMethod, notes };
+      if (moist <= 7.5) {
+        await sb.from('batches').update({ phase:'complete', current_day: fermDay }).eq('id', batchId);
+        await loadData();
+      }
+    }
+  }
+  if (error) { toast(error.message,'bad'); return; }
+  toast('Day ' + fermDay + ' saved!');
+  await sb.from('batches').update({ current_day: Math.max(fermDay, data.batches.find(b=>b.id===batchId)?.current_day||1) }).eq('id', batchId);
+  renderFermentation(document.getElementById('mc'), document.getElementById('ab'));
+}
+
+let cutCounts = { fully:0, partly:0, violet:0, slaty:0, mouldy:0, insect:0 };
+function renderCutTest(mc,ab) {
+  const batch = selectedId ? data.batches.find(b=>b.id===selectedId) : data.batches[0];
+  const tot = Object.values(cutCounts).reduce((a,b)=>a+b,0);
+  const score = tot>0 ? calcCutScore(cutCounts,tot) : { score:0, grade:'—', fi:0 };
+  const beanTypes = [
+    {key:'fully',label:'Fully fermented',color:'#6B3A22',ideal:'>75%'},
+    {key:'partly',label:'Partly fermented',color:'#A0522D',ideal:'<15%'},
+    {key:'violet',label:'Violet / unfermented',color:'#7F77DD',ideal:'<5%'},
+    {key:'slaty',label:'Slaty',color:'#5F5E5A',ideal:'<3%'},
+    {key:'mouldy',label:'Mouldy',color:'#A32D2D',ideal:'0%'},
+    {key:'insect',label:'Insect damaged',color:'#854F0B',ideal:'0%'},
+  ];
+  mc.innerHTML = `
+    <div style="margin-bottom:1.25rem;"><div class="pt">Cut test</div><div class="ps">ICCO standard — 100 beans, count each type</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:1.25rem;">
+      <div class="sc"><div class="sl">Beans counted</div><div class="sv" style="color:${tot>=100?'#2D5016':tot>0?'#854F0B':'var(--ca)'};">${tot}</div><div class="su">${tot>=100?'Target reached':(100-tot)+' remaining'}</div></div>
+      <div class="sc"><div class="sl">Ferm. index</div><div class="sv" style="color:${score.fi>=75?'#2D5016':'#854F0B'};">${tot>0?score.fi:'—'}%</div><div class="su">target ≥75%</div></div>
+    </div>
+    ${tot>0?`<div class="card"><div class="ct">Score</div>
+      <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--sb);border-radius:9px;margin-bottom:10px;">
+        <div style="font-family:'Fraunces',serif;font-size:44px;color:${scoreColor(score.score)};">${score.score}</div>
+        <div style="flex:1;">
+          <div style="font-family:'Fraunces',serif;font-size:15px;color:${scoreColor(score.score)};margin-bottom:4px;">${score.grade}</div>
+          <div style="height:7px;background:var(--bd);border-radius:4px;overflow:hidden;"><div style="height:100%;width:${score.score}%;background:${scoreColor(score.score)};border-radius:4px;"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tl);margin-top:3px;"><span>0</span><span>50 Fair</span><span>70 Good</span><span>85 Excellent</span></div>
+        </div>
+      </div>
+    </div>`:''}
+    <div class="card">
+      <div class="ct">Bean counter <button class="btn-s" style="font-size:11.5px;padding:3px 10px;" onclick="cutCounts={fully:0,partly:0,violet:0,slaty:0,mouldy:0,insect:0};renderCutTest(document.getElementById('mc'),document.getElementById('ab'))">Reset</button></div>
+      <div style="font-size:12.5px;color:var(--tl);margin-bottom:14px;">Cut 100 beans lengthwise. Tap + for each type you see.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        ${beanTypes.map(bt=>`
+          <div style="border:0.5px solid var(--bd);border-radius:10px;padding:11px 13px;background:var(--cr);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div>
+                <div style="font-size:12px;font-weight:500;color:${bt.color};">${bt.label}</div>
+                <div style="font-size:10px;color:var(--tl);">ideal ${bt.ideal}</div>
+              </div>
+              <div style="font-family:'Fraunces',serif;font-size:20px;color:var(--ca);">${cutCounts[bt.key]}</div>
+            </div>
+            <div style="height:3px;background:var(--bd);border-radius:2px;overflow:hidden;margin-bottom:8px;"><div style="height:100%;width:${tot>0?Math.round(cutCounts[bt.key]/tot*100):0}%;background:${bt.color};transition:width .3s;"></div></div>
+            <div style="display:flex;gap:6px;">
+              <button onclick="cutCounts['${bt.key}']=Math.max(0,cutCounts['${bt.key}']-1);renderCutTest(document.getElementById('mc'),document.getElementById('ab'))" style="width:28px;height:28px;border:0.5px solid var(--bd);border-radius:6px;cursor:pointer;background:var(--cr);font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--tm);font-family:'DM Sans',sans-serif;">&#8722;</button>
+              <button onclick="cutCounts['${bt.key}']++;renderCutTest(document.getElementById('mc'),document.getElementById('ab'))" style="flex:1;height:28px;border:0.5px solid ${bt.color}44;border-radius:6px;cursor:pointer;background:${bt.color}15;font-size:14px;display:flex;align-items:center;justify-content:center;color:${bt.color};font-weight:500;font-family:'DM Sans',sans-serif;">&#43;</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  ab.innerHTML = `
+    <div style="font-size:12.5px;color:var(--tl);">${tot<100?`&#9651; ${100-tot} more beans`:'&#10003; 100 beans counted'}</div>
+    <button class="btn-p" onclick="saveCutTest('${batch?.id||''}')" ${tot<100?'style="opacity:.5;cursor:not-allowed"':''}>&#10003; Save cut test</button>`;
+}
+
+function calcCutScore(c,tot) {
+  const fully=c.fully/tot*100, partly=c.partly/tot*100, violet=c.violet/tot*100, slaty=c.slaty/tot*100, mouldy=c.mouldy/tot*100, insect=c.insect/tot*100;
+  const fi = Math.round(c.fully/(c.fully+c.partly+c.violet||1)*100);
+  let s = Math.min(fully,100)*0.7 + partly*0.35;
+  s = Math.max(0, s - violet*1.5 - slaty*2.0 - mouldy*3.0 - insect*3.0);
+  s = Math.min(100, Math.max(0, Math.round(s)));
+  const grade = s>=85?'Excellent':s>=70?'Good':s>=50?'Fair':'Poor';
+  return { score:s, grade, fi };
+}
+function scoreColor(s){return s>=85?'#2D5016':s>=70?'#3B6D11':s>=50?'#854F0B':'#A32D2D';}
+
+async function saveCutTest(batchId) {
+  const tot = Object.values(cutCounts).reduce((a,b)=>a+b,0);
+  if (tot<100) { toast('Count 100 beans first','bad'); return; }
+  const { score, grade, fi } = calcCutScore(cutCounts, tot);
+  const { error } = await sb.from('cut_tests').insert({
+    batch_id: batchId, total_beans: tot,
+    fully_fermented: cutCounts.fully, partly_fermented: cutCounts.partly,
+    violet: cutCounts.violet, slaty: cutCounts.slaty,
+    mouldy: cutCounts.mouldy, insect_damaged: cutCounts.insect,
+    score, grade, fermentation_index: fi, tested_by: user.id
+  });
+  if (error) { toast(error.message,'bad'); return; }
+  toast('Cut test saved — '+score+' ('+grade+')');
+  cutCounts = { fully:0, partly:0, violet:0, slaty:0, mouldy:0, insect:0 };
+  setView('batches');
+}
+
+async function renderOffers(mc,ab) {
+  const { data: offers } = await sb.from('offers').select('*, batches(batch_code), profiles(full_name,email)').order('created_at',{ascending:false});
+  mc.innerHTML = `
+    <div style="margin-bottom:1.25rem;"><div class="pt">Buyer offers</div><div class="ps">All offers received on published batches</div></div>
+    ${(!offers||offers.length===0)?`<div class="card" style="text-align:center;padding:2.5rem;color:var(--tl);">No offers yet. Publish batches to make them visible to buyers.</div>`:`
+    <div class="card" style="padding:0;overflow:hidden;">
+      <table class="tbl">
+        <thead><tr><th>Offer ID</th><th>Batch</th><th>Buyer</th><th>Price/kg</th><th>Volume</th><th>Incoterm</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${offers.map(o=>`<tr>
+            <td style="font-size:11px;color:var(--tl);">${o.id.slice(0,8)}…</td>
+            <td style="font-weight:500;">${o.batches?.batch_code||'—'}</td>
+            <td>${o.profiles?.full_name||o.profiles?.email||'—'}</td>
+            <td>$${parseFloat(o.price_usd_per_kg).toFixed(2)}</td>
+            <td>${o.volume_kg}kg</td>
+            <td style="font-size:11.5px;">${o.incoterm}</td>
+            <td><span class="pill ${o.status}">${o.status}</span></td>
+            <td style="display:flex;gap:5px;">
+              ${o.status==='pending'?`
+              <button class="btn-ok" style="font-size:11px;padding:3px 9px;" onclick="updateOffer('${o.id}','accepted')">Accept</button>
+              <button class="btn-danger" style="font-size:11px;padding:3px 9px;" onclick="updateOffer('${o.id}','rejected')">Reject</button>`:''}
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`}`;
+  ab.innerHTML = `<button class="btn-s" onclick="publishBatches()">Publish batches to buyers</button>`;
+}
+
+async function updateOffer(id, status) {
+  const { error } = await sb.from('offers').update({ status }).eq('id', id);
+  if (error) { toast(error.message,'bad'); return; }
+  toast('Offer '+status);
+  renderOffers(document.getElementById('mc'), document.getElementById('ab'));
+}
+
+async function publishBatches() {
+  const completeBatches = data.batches.filter(b=>b.phase==='complete'&&!b.published);
+  if (completeBatches.length===0) { toast('No completed batches to publish','bad'); return; }
+  const ids = completeBatches.map(b=>b.id);
+  await sb.from('batches').update({ published:true }).in('id',ids);
+  toast(ids.length+' batch(es) published to buyers!');
+  await loadData();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BUYER APP
+══════════════════════════════════════════════════════════════ */
+function renderBuyerApp() {
+  const REGIONS = {
+    eu:{label:'European Union',currencies:['EUR','USD','GBP'],defaultCur:'EUR',color:'#003399',incoterms:['FOB Matadi','FOB Kinshasa','CFR Rotterdam','CIF Rotterdam','DAP warehouse'],paymentTerms:['Letter of credit (LC)','30 days after BL','60 days after BL','50% upfront, 50% on BL']},
+    uk:{label:'United Kingdom',currencies:['GBP','USD','EUR'],defaultCur:'GBP',color:'#C8102E',incoterms:['FOB Matadi','CFR Felixstowe','CIF Felixstowe','DAP warehouse'],paymentTerms:['Letter of credit (LC)','30 days after BL','Open account 60d']},
+    us:{label:'United States',currencies:['USD','EUR','GBP'],defaultCur:'USD',color:'#3C3B6E',incoterms:['FOB Matadi','CFR New York','CIF New York','DAP warehouse'],paymentTerms:['Wire transfer (T/T)','Letter of credit (LC)','Net 30','Net 60']},
+    asia:{label:'Asia',currencies:['JPY','CNY','USD','EUR'],defaultCur:'JPY',color:'#8B1A1A',incoterms:['FOB Matadi','CFR Singapore','CFR Tokyo','CFR Shanghai','CIF Singapore','DAP warehouse'],paymentTerms:['Letter of credit (LC)','T/T advance','Documents against payment (D/P)']},
+  };
+  const FX = {USD:1,EUR:0.92,GBP:0.79,JPY:149.50,CNY:7.24};
+  const region = REGIONS[profile.region||'eu'];
+  const cur = profile.currency || region.defaultCur;
+  const sym = {USD:'$',EUR:'€',GBP:'£',JPY:'¥',CNY:'¥'}[cur]||'$';
+  function fmtCur(usd){ const v=(usd||0)*FX[cur]; return (cur==='JPY'||cur==='CNY')?sym+Math.round(v).toLocaleString():sym+v.toFixed(2); }
+  function gradeClass(g){return g==='Excellent'?'excellent':g==='Good'?'good':g==='Fair'?'fair':'poor';}
+
+  document.getElementById('root').innerHTML = `
+    <div class="shell">
+      <header class="hdr buyer-hdr" style="background:${region.color};">
+        <div class="logo">&#9670; Cacao</div>
+        <div style="font-size:11px;padding:3px 10px;border-radius:10px;background:rgba(255,255,255,0.15);color:#FAF6F0;font-weight:500;">${region.label} · Buyer</div>
+        <nav style="display:flex;gap:3px;margin-left:auto;">
+          <button class="np ${view==='dashboard'?'active':''}" onclick="setView('dashboard')">Dashboard</button>
+          <button class="np ${view==='batches'?'active':''}" onclick="setView('batches')">Batches</button>
+          <button class="np ${view==='offers'?'active':''}" onclick="setView('offers')">My offers</button>
+        </nav>
+        <button class="np" style="margin-left:8px;" onclick="sb.auth.signOut()">Sign out</button>
+      </header>
+      <div class="main">
+        <aside class="sb">
+          <div class="sbsc">Overview</div>
+          <div class="sbi ${view==='dashboard'?'buyer-active':''}" onclick="setView('dashboard')"><span style="width:17px;text-align:center;">&#9632;</span> Dashboard</div>
+          <div class="sbi ${view==='batches'?'buyer-active':''}" onclick="setView('batches')"><span style="width:17px;text-align:center;">&#9776;</span> Available batches <span class="bdg">${data.batches.length}</span></div>
+          <div class="sbsc">Transactions</div>
+          <div class="sbi ${view==='offers'?'buyer-active':''}" onclick="setView('offers')"><span style="width:17px;text-align:center;">&#9671;</span> My offers <span class="bdg">${data.offers.length}</span></div>
+          <div class="sbi ${view==='makeoffer'?'buyer-active':''}" onclick="setView('makeoffer')"><span style="width:17px;text-align:center;">&#43;</span> Make offer</div>
+          <div class="sbsc">Currency</div>
+          ${region.currencies.map(c=>`<div class="sbi ${cur===c?'buyer-active':''}" onclick="updateBuyerCurrency('${c}')" style="font-size:12px;"><span style="width:17px;text-align:center;">&#9679;</span> ${c}</div>`).join('')}
+        </aside>
+        <main class="con" id="mc"></main>
+      </div>
+      <div class="abar" id="ab"></div>
+    </div>`;
+
+  function renderBuyerView() {
+    const mc2 = document.getElementById('mc');
+    const ab2 = document.getElementById('ab');
+    if (!mc2) return;
+    if (view==='dashboard') {
+      const avgScore = data.batches.length>0 ? Math.round(data.batches.reduce((a,b)=>a+(b.cut_score||0),0)/data.batches.length) : 0;
+      mc2.innerHTML = `
+        <div style="margin-bottom:1.25rem;"><div class="pt">Buyer dashboard</div><div class="ps" style="display:flex;align-items:center;gap:6px;">${drcFlag()} DRC origin · ${region.label} · FOB Matadi</div></div>
+        <div class="srow">
+          <div class="sc"><div class="sl">Available</div><div class="sv">${data.batches.length}</div><div class="su">batches</div></div>
+          <div class="sc"><div class="sl">Volume</div><div class="sv">${data.batches.reduce((a,b)=>a+(b.dry_kg||b.wet_kg||0),0)}</div><div class="su">kg total</div></div>
+          <div class="sc"><div class="sl">Avg cut score</div><div class="sv" style="color:${scoreColor(avgScore)};">${avgScore||'—'}</div><div class="su">all batches</div></div>
+          <div class="sc"><div class="sl">My offers</div><div class="sv">${data.offers.length}</div><div class="su">${data.offers.filter(o=>o.status==='pending').length} pending</div></div>
+        </div>
+        ${data.batches.length===0?`<div class="card" style="text-align:center;padding:2.5rem;color:var(--tl);">No batches available yet. Check back soon.</div>`:`
+        <div class="card">
+          <div class="ct">Available batches <span style="font-size:11.5px;color:var(--tl);">prices in ${cur}, FOB Matadi</span></div>
+          <table class="tbl">
+            <thead><tr><th>Batch</th><th>Farmer</th><th>Village</th><th>Kg</th><th>Score</th><th>Moisture</th><th>FOB price</th><th></th></tr></thead>
+            <tbody>
+              ${data.batches.slice(0,5).map(b=>`<tr>
+                <td style="font-weight:500;color:var(--buyer);">${b.batch_code||b.id?.slice(0,8)}</td>
+                <td>${b.farmer_name||'—'}</td>
+                <td style="color:var(--tl);">${b.village||'—'}</td>
+                <td>${b.dry_kg||b.wet_kg||'—'}</td>
+                <td><span style="font-family:'Fraunces',serif;font-size:15px;color:${scoreColor(b.cut_score||0)};">${b.cut_score||'—'}</span></td>
+                <td style="color:${(b.latest_moisture||99)<=7.5?'#2D5016':'#854F0B'};font-weight:500;">${b.latest_moisture||'—'}% <span style="font-size:10px;padding:1px 5px;border-radius:7px;background:${b.moisture_method==='meter'?'#E6F1FB':'var(--warnbg)'};color:${b.moisture_method==='meter'?'#0C447C':'#854F0B'};">${b.moisture_method==='meter'?'meter':'visual'}</span></td>
+                <td style="font-weight:500;">${fmtCur(3.20)}/kg</td>
+                <td><button class="btn-buyer" style="font-size:11px;padding:3px 10px;" onclick="selectedId='${b.id}';view='makeoffer';renderBuyerView()">Offer</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`}`;
+      ab2.innerHTML = `<button class="btn-buyer" onclick="view='batches';renderBuyerView()">Browse all batches</button><button class="btn-s" onclick="toast('Downloading…','info')">&#8595; Download summary</button>`;
+    }
+    else if (view==='batches') {
+      mc2.innerHTML = `
+        <div style="margin-bottom:1.25rem;"><div class="pt">Available batches</div><div class="ps">All prices FOB Matadi in ${cur}</div></div>
+        ${data.batches.length===0?`<div class="card" style="text-align:center;padding:2.5rem;color:var(--tl);">No batches published yet.</div>`:`
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="tbl">
+            <thead><tr><th>Batch</th><th>Farmer</th><th>Province</th><th>Kg</th><th>Cut score</th><th>FI</th><th>Moisture</th><th>Certifs</th><th></th></tr></thead>
+            <tbody>
+              ${data.batches.map(b=>`<tr>
+                <td style="font-weight:500;color:var(--buyer);">${b.batch_code||b.id?.slice(0,8)}</td>
+                <td>${b.farmer_name||'—'}</td>
+                <td style="color:var(--tl);">${b.province||'—'}</td>
+                <td>${b.dry_kg||b.wet_kg||'—'}</td>
+                <td><span style="font-family:'Fraunces',serif;font-size:15px;color:${scoreColor(b.cut_score||0)};">${b.cut_score||'—'}</span> <span class="pill ${gradeClass(b.cut_grade||'')}">${b.cut_grade||'—'}</span></td>
+                <td style="color:${(b.fi||0)>=75?'#2D5016':'#854F0B'};font-weight:500;">${b.fi||'—'}%</td>
+                <td><span style="color:${(b.latest_moisture||99)<=7.5?'#2D5016':'#854F0B'};font-weight:500;">${b.latest_moisture||'—'}%</span></td>
+                <td style="font-size:11px;">${(b.certifications||[]).map(c=>`<span style="padding:1px 5px;background:var(--tg);color:var(--tt);border-radius:7px;">${c}</span>`).join(' ')||'—'}</td>
+                <td><button class="btn-buyer" style="font-size:11px;padding:3px 10px;" onclick="selectedId='${b.id}';view='makeoffer';renderBuyerView()">Offer</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`}`;
+      ab2.innerHTML = '';
+    }
+    else if (view==='makeoffer') {
+      const batch = data.batches.find(b=>b.id===selectedId)||data.batches[0];
+      mc2.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;">
+          <button class="btn-s" style="font-size:12px;padding:4px 11px;" onclick="view='batches';renderBuyerView()">&#8592; Back</button>
+          <div><div class="pt" style="font-size:20px;">Make an offer</div><div class="ps" style="margin-bottom:0;">${batch?.batch_code||'—'} · ${batch?.farmer_name||'—'}</div></div>
+        </div>
+        <div class="card">
+          <div class="ct">Offer details</div>
+          <div class="fg three">
+            <div class="ff"><label>FOB price per kg (${cur}) *</label><input type="number" id="offer-price" placeholder="e.g. ${cur==='EUR'?'2.95':cur==='GBP'?'2.52':'3.20'}" step="0.01" min="1" oninput="updateOfferPreview('${fmtCur(1).replace(/[^€$£¥]/g,'')}')"/></div>
+            <div class="ff"><label>Volume (kg) *</label><input type="number" id="offer-vol" value="${batch?.dry_kg||batch?.wet_kg||320}" min="50" oninput="updateOfferPreview()"/></div>
+            <div class="ff"><label>Currency</label><select id="offer-cur">${region.currencies.map(c=>`<option ${c===cur?'selected':''}>${c}</option>`).join('')}</select></div>
+            <div class="ff s2"><label>Incoterm</label><select id="offer-inco">${region.incoterms.map(t=>`<option ${t==='FOB Matadi'?'selected':''}>${t}</option>`).join('')}</select></div>
+            <div class="ff"><label>Payment terms</label><select id="offer-terms">${region.paymentTerms.map(t=>`<option>${t}</option>`).join('')}</select></div>
+            <div class="ff"><label>Valid until</label><input type="date" id="offer-valid" value="${new Date(Date.now()+14*86400000).toISOString().slice(0,10)}"/></div>
+            <div class="ff s2"><label>Notes / conditions</label><textarea id="offer-notes" placeholder="e.g. Rainforest Alliance certificate required, subject to moisture verification on arrival…"></textarea></div>
+          </div>
+          <div id="offer-preview" style="padding:10px 14px;background:var(--buyerbg);border-radius:8px;font-size:12.5px;color:var(--buyer);border:0.5px solid #378ADD;margin-top:4px;">Enter price and volume to see total.</div>
+        </div>`;
+      ab2.innerHTML = `<button class="btn-s" onclick="view='batches';renderBuyerView()">Cancel</button><button class="btn-ok" onclick="submitBuyerOffer('${batch?.id||''}')" style="margin-left:auto;">&#10003; Submit offer</button>`;
+    }
+    else if (view==='offers') {
+      mc2.innerHTML = `
+        <div style="margin-bottom:1.25rem;"><div class="pt">My offers</div><div class="ps">All submitted offers</div></div>
+        ${data.offers.length===0?`<div class="card" style="text-align:center;padding:2.5rem;color:var(--tl);">No offers submitted yet.</div>`:`
+        ${data.offers.map(o=>`
+          <div class="card">
+            <div class="ct">${o.id?.slice(0,8)}… · ${o.batch_id?.slice(0,8)}<span class="pill ${o.status}">${o.status}</span></div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px;">
+              ${[['FOB price','$'+parseFloat(o.price_usd_per_kg).toFixed(2)+'/kg'],['Volume',o.volume_kg+'kg'],['Total','$'+(o.price_usd_per_kg*o.volume_kg).toFixed(0)],['Incoterm',o.incoterm]].map(([l,v])=>`
+                <div style="background:var(--sb);border-radius:8px;padding:8px 11px;"><div style="font-size:10px;color:var(--tl);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;">${l}</div><div style="font-size:13px;font-weight:500;">${v}</div></div>`).join('')}
+            </div>
+          </div>`).join('')}`}`;
+      ab2.innerHTML = `<button class="btn-buyer" onclick="view='makeoffer';renderBuyerView()">+ New offer</button>`;
+    }
+  }
+
+  window.updateOfferPreview = function() {
+    const price = parseFloat(document.getElementById('offer-price')?.value||0);
+    const vol = parseFloat(document.getElementById('offer-vol')?.value||0);
+    const p = document.getElementById('offer-preview');
+    if (!p) return;
+    if (price>0&&vol>0) {
+      p.innerHTML = `&#9671; <strong>${vol}kg &times; ${sym}${price.toFixed(2)}/kg = ${(cur==='JPY'||cur==='CNY')?sym+Math.round(price*vol).toLocaleString():sym+(price*vol).toFixed(2)} ${cur}</strong> · ${document.getElementById('offer-inco')?.value||'FOB Matadi'}`;
+    } else { p.innerHTML = 'Enter price and volume to see total.'; }
+  };
+
+  window.submitBuyerOffer = async function(batchId) {
+    const price = parseFloat(document.getElementById('offer-price')?.value||0);
+    const vol = parseInt(document.getElementById('offer-vol')?.value||0);
+    const offerCur = document.getElementById('offer-cur')?.value||cur;
+    const inco = document.getElementById('offer-inco')?.value||'FOB Matadi';
+    if (!price||!vol) { toast('Enter price and volume','bad'); return; }
+    const priceUSD = price/FX[offerCur];
+    const { error } = await sb.from('offers').insert({
+      batch_id: batchId, buyer_id: user.id,
+      price_usd_per_kg: priceUSD, volume_kg: vol,
+      currency: offerCur, incoterm: inco,
+      payment_terms: document.getElementById('offer-terms')?.value,
+      valid_until: document.getElementById('offer-valid')?.value,
+      notes: document.getElementById('offer-notes')?.value,
+      status: 'pending'
+    });
+    if (error) { toast(error.message,'bad'); return; }
+    toast('Offer submitted!','info');
+    await loadData();
+    view = 'offers';
+    renderBuyerView();
+  };
+
+  renderBuyerView();
+}
+
+async function updateBuyerCurrency(c) {
+  await sb.from('profiles').update({ currency: c }).eq('id', user.id);
+  profile.currency = c;
+  render();
+}
+
+/* ── Start ───────────────────────────────────────────────────── */
+boot();
+</script>
+</body>
+</html>
