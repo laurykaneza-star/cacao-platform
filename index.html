@@ -1131,7 +1131,7 @@ function renderBuyerApp() {
       <div class="abar" id="ab"></div>
     </div>`;
 
-  function renderBuyerView() {
+  window.renderBuyerView = function renderBuyerView() {
     const mc2 = document.getElementById('mc');
     const ab2 = document.getElementById('ab');
     if (!mc2) return;
